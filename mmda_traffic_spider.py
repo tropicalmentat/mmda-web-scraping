@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
 import urllib
 
-tr_start = urllib.urlopen('http://mmdatraffic.interaksyon.com/line-view-edsa.php' \
-                          ).read()                      
+site = 'http://mmdatraffic.interaksyon.com/line-view-edsa.php'
+
+tr_start = urllib.urlopen(site).read()                      
 
 #website to spider: http://mmdatraffic.interaksyon.com/line-view-edsa.php
 #code segment of interest is located from 264:271, div class "lnav"
@@ -13,8 +14,16 @@ tr_soup = BeautifulSoup(tr_start, "lxml")
 
 tr_sites = tr_soup.find("div", class_="lnav")
 
-print tr_sites
+line_link = tr_sites.find_all("div", class_="row")
 
-#tr_link = tr_sites.find_all("a")
+links = []
 
-#print tr_link
+for i in line_link:
+    links.append(i.a["href"])
+    if "http" in i.a["href"]:
+        pass
+    
+    print i.a["href"]
+    
+
+print links
