@@ -19,11 +19,17 @@ line_link = tr_sites.find_all("div", class_="row")
 links = []
 
 for i in line_link:
-    links.append(i.a["href"])
-    if "http" in i.a["href"]:
+    if "http:" in i.a["href"]:
         pass
+    else:
+        links.append(i.a["href"])
+        print i.a["href"]
     
-    print i.a["href"]
-    
+#crawl through links
 
-print links
+for link in links:
+    tr_line = urllib.urlopen(site+'/'+link).read()
+
+    line_soup = BeautifulSoup(tr_line, "lxml")
+
+    print line_soup.prettify()
