@@ -1,10 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from bs4 import BeautifulSoup
 import urllib
-import csv
+import unicodecsv as csv
 
 site = 'http://mmdatraffic.interaksyon.com/line-view-edsa.php'
 
-tr_start = urllib.urlopen(site).read()                      
+tr_start = urllib.urlopen(site).read()
 
 #website to spider: http://mmdatraffic.interaksyon.com/line-view-edsa.php
 #code segment of interest is located from 264:271, div class "lnav"
@@ -27,7 +30,7 @@ for i in line_link:
         links.append(i.a["href"])
         #print i.a["href"]
     
-#crawl through links
+#crawl through links and write data to csv
 
 with open('test.csv', 'wb') as f:
     writer = csv.writer(f,delimiter=',')
@@ -39,7 +42,7 @@ with open('test.csv', 'wb') as f:
     for link in links:
         try:
             tr_line = urllib.urlopen('http://mmdatraffic.interaksyon.com'
-                                     +'/'+link).read()
+                                     +'/'+link).read().decode('utf-8')
 
             line_soup = BeautifulSoup(tr_line, "lxml")
 
@@ -50,7 +53,7 @@ with open('test.csv', 'wb') as f:
             for element in line_tr:
 
                 #scraping line name
-                line_name = element.a.get_text().strip() 
+                line_name = element.a.get_text().strip()
 
                 #scraping traffic status
                 line_stat = element.find("div", \
@@ -61,11 +64,10 @@ with open('test.csv', 'wb') as f:
                                           ).p.get_text().strip('Updated: ')
                 
                 print line_name, ': ', line_stat, ': ', time_stamp, '\n'
-                tr_record = [line_name,line_stat,time_stamp]
-                writer.writerow([line_name,
-                                  line_stat,
-                                 time_stamp])
+                tr_record = [line_name.decode,line_stat,time_stamp]
+                writer.writerow([line_name,line_stat,time_stamp])
 
                 ##needs scraper for service roads and accident notifications
         except:
             UnicodeEncodeError
+            #print 'line %d: %s' % (writer.line_num, e)
