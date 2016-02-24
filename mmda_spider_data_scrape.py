@@ -4,6 +4,17 @@
 from bs4 import BeautifulSoup
 import urllib
 import unicodecsv as csv
+from datetime import date
+import os
+
+def newCSV(f):
+    """Creates a new csv file with current date and time as suffix"""
+    if os.path.exists(f):
+        new_csv = f.split('_')
+        new_csv[1] += '_'+date.today()
+
+        return new_csv
+
 
 site = 'http://mmdatraffic.interaksyon.com/line-view-edsa.php'
 
@@ -36,7 +47,7 @@ with open('test.csv', 'wb') as f:
     writer = csv.writer(f,delimiter=',')
 
     #write field names
-    field_names = ['LINE','STATUS','TIME_STAMP']
+    field_names = ['LINE','NB_STATUS','TIME_STAMP']
     writer.writerow(field_names)
 
     for link in links:
@@ -55,19 +66,25 @@ with open('test.csv', 'wb') as f:
                 #scraping line name
                 line_name = element.a.get_text().strip()
 
-                #scraping traffic status
-                line_stat = element.find("div", \
+                #scraping north bound traffic status
+                nb_stat = element.find("div", \
                                          class_="line-status").get_text().\
                                          split('\n')[2].strip()
                 
                 time_stamp = element.find("div", class_="line-col" \
                                           ).p.get_text().strip('Updated: ')
-                
-                print line_name, ': ', line_stat, ': ', time_stamp, '\n'
-                tr_record = [line_name.decode,line_stat,time_stamp]
-                writer.writerow([line_name,line_stat,time_stamp])
+
+                #scraping south bound traffic status
+                sb_stat = element.find("div",
+                                       class_="line-status")
+
+                tr_record = [line_name.decode,nb_stat,time_stamp]
+                writer.writerow([line_name,nb_stat,time_stamp])
+
+                print sb_stat
+                #print line_name, ': ', nb_stat, ': ', time_stamp, '\n'
 
                 ##needs scraper for service roads and accident notifications
         except:
             UnicodeEncodeError
-            #print 'line %d: %s' % (writer.line_num, e)
+
