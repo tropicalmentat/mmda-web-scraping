@@ -7,6 +7,7 @@ import unicodecsv as csv
 from datetime import date
 import os
 
+
 def newCSV(f):
     """Creates a new csv file with current date and time as suffix"""
     if os.path.exists(f):
@@ -16,22 +17,28 @@ def newCSV(f):
         return new_csv
 
 
+def remove_space(l):
+    for elm in l:
+        if elm == '\n':
+            l.remove(elm)
+    return l
+
 site = 'http://mmdatraffic.interaksyon.com/line-view-edsa.php'
 
-tr_start = urllib.urlopen(site).read()
+tr_start = urllib.urlopen(site).read()  #TODO: handle IO error
 
-#website to spider: http://mmdatraffic.interaksyon.com/line-view-edsa.php
-#code segment of interest is located from 264:271, div class "lnav"
+# website to spider: http://mmdatraffic.interaksyon.com/line-view-edsa.php
+# code segment of interest is located from 264:271, div class "lnav"
 
 tr_soup = BeautifulSoup(tr_start, "lxml")
 
-#print type(tr_soup)
+#print tr_soup.prettify()
 
 tr_sites = tr_soup.find("div", class_="lnav")
 
 line_link = tr_sites.find_all("div", class_="row")
 
-#collect line links
+# collect line links
 links = []
 
 for i in line_link:
@@ -41,13 +48,13 @@ for i in line_link:
         links.append(i.a["href"])
         #print i.a["href"]
     
-#crawl through links and write data to csv
+# crawl through links and write data to csv
 
 with open('test.csv', 'wb') as f:
     writer = csv.writer(f,delimiter=',')
 
-    #write field names
-    field_names = ['LINE','NB_STATUS','TIME_STAMP']
+    # write field names
+    field_names = ['LINE', 'SB_STATUS', 'NB_STATUS', 'TIME_STAMP']
     writer.writerow(field_names)
 
     for link in links:
@@ -57,34 +64,70 @@ with open('test.csv', 'wb') as f:
 
             line_soup = BeautifulSoup(tr_line, "lxml")
 
-            print '\n\n'+site+'/'+link+'\n\n'
+            print '\n\n'+site+'/'+link+'\n'
 
-            line_tr = line_soup.find_all("div", class_="line-row1")
-            
-            for element in line_tr:
+            # find first line data
+            traffic_status = line_soup.find("div", class_="line-row1").contents
+            # the first child is the line name
+            # the second child is the southbound status
+            # the third child is the northbound status
+            # the timestamps of each status is embedded in the p tag
 
-                #scraping line name
-                line_name = element.a.get_text().strip()
+            # remove child spaces
+            remove_space(traffic_status)
 
-                #scraping north bound traffic status
-                nb_stat = element.find("div", \
-                                         class_="line-status").get_text().\
-                                         split('\n')[2].strip()
-                
-                time_stamp = element.find("div", class_="line-col" \
-                                          ).p.get_text().strip('Updated: ')
+            line_name = traffic_status[0].a.string
+            sb_status = remove_space(traffic_status[1].find('div',
+                                                            class_='line-status').
+                                     contents)[-1].string
+            sb_timestamp = traffic_status[1].p.string
+            nb_status = remove_space(traffic_status[2].find('div',
+                                                            class_='line-status').
+                                     contents)[-1].string
+            nb_timestamp = traffic_status[2].p.string
+            print "%s|%s|%s|%s|%s" % (line_name,
+                                sb_status, sb_timestamp,
+                                nb_status, nb_timestamp)
 
-                #scraping south bound traffic status
-                sb_stat = element.find("div",
-                                       class_="line-status")
+            # find data for each sibling of the first
+            line_sib = line_soup.find("div", class_="line-row1").next_siblings
+            for sibling in line_sib:
+                if sibling == '\n':
+                    pass
+                else:
+                    sibling_status = remove_space(sibling.contents)
+                    line_name = sibling_status[0].a.string
+                    sb_status = remove_space(sibling_status[1].find('div',
+                                                    class_='line-status').
+                                             contents)[-1].string
+                    sb_timestamp = sibling_status[1].p.string
+                    nb_status = remove_space(sibling_status[2].find('div',
+                                                    class_='line-status').
+                                             contents)[-1].string
+                    nb_timestamp = sibling_status[2].p.string
+                    print "%s|%s|%s|%s|%s" % (line_name,
+                                              sb_status, sb_timestamp,
+                                              nb_status, nb_timestamp)
 
-                tr_record = [line_name.decode,nb_stat,time_stamp]
-                writer.writerow([line_name,nb_stat,time_stamp])
 
-                print sb_stat
-                #print line_name, ': ', nb_stat, ': ', time_stamp, '\n'
 
-                ##needs scraper for service roads and accident notifications
+            # loop to inspect the html structure of line status
+            # to be used when there is a change in the over structure
+            # of the website
+            """
+            count = 1
+            for child in traffic_status.contents:
+                if child == '\n':  # ignore the space between tags
+                    pass
+                else:
+                    print "%d.%s" % (count, child)
+                    count += 1
+            """
+
+            #for i in zip(line_name, sb_status, nb_status):
+             #   writer.writerow([i[0].a.string, i[1], i[2]])
+
+            # TODO:needs scraper for service roads and accident notifications
         except:
             UnicodeEncodeError
 
