@@ -4,17 +4,16 @@
 from bs4 import BeautifulSoup
 import urllib
 import unicodecsv as csv
-from datetime import date
-import os
+import time
 
 
-def newCSV(f):
+def new_csv():
     """Creates a new csv file with current date and time as suffix"""
-    if os.path.exists(f):
-        new_csv = f.split('_')
-        new_csv[1] += '_'+date.today()
-
-        return new_csv
+    t = time.localtime()
+    suf = str(t[0]) + str(t[1]) + str(t[2]) + str(t[3]) \
+            + str(t[4]) + str(t[5]) + str(t[6])
+    new_report = "test_trfc_stat_" + suf + "_.csv"
+    return new_report
 
 
 def remove_space(l):
@@ -50,17 +49,18 @@ for i in line_link:
     
 # crawl through links and write data to csv
 
-with open('test.csv', 'wb') as f:
-    writer = csv.writer(f,delimiter=',')
+with open(new_csv(), 'wb') as f:
+    writer = csv.writer(f, delimiter=',')
 
     # write field names
-    field_names = ['LINE', 'SB_STATUS', 'NB_STATUS', 'TIME_STAMP']
+    field_names = ['LINE', 'SB_STATUS', 'TIMESTAMP',
+                   'NB_STATUS', 'TIME_STAMP']
     writer.writerow(field_names)
 
     for link in links:
         try:
             tr_line = urllib.urlopen('http://mmdatraffic.interaksyon.com'
-                                     +'/'+link).read().decode('utf-8')
+                                     + '/' + link).read().decode('utf-8')
 
             line_soup = BeautifulSoup(tr_line, "lxml")
 
@@ -80,11 +80,18 @@ with open('test.csv', 'wb') as f:
             sb_status = remove_space(traffic_status[1].find('div',
                                                             class_='line-status').
                                      contents)[-1].string
+
             sb_timestamp = traffic_status[1].p.string
+
             nb_status = remove_space(traffic_status[2].find('div',
                                                             class_='line-status').
                                      contents)[-1].string
+
             nb_timestamp = traffic_status[2].p.string
+
+            writer.writerow([line_name, sb_status, sb_timestamp,
+                             nb_status, nb_timestamp])
+
             print "%s|%s|%s|%s|%s" % (line_name,
                                 sb_status, sb_timestamp,
                                 nb_status, nb_timestamp)
@@ -97,19 +104,25 @@ with open('test.csv', 'wb') as f:
                 else:
                     sibling_status = remove_space(sibling.contents)
                     line_name = sibling_status[0].a.string
+
                     sb_status = remove_space(sibling_status[1].find('div',
                                                     class_='line-status').
                                              contents)[-1].string
+
                     sb_timestamp = sibling_status[1].p.string
+
                     nb_status = remove_space(sibling_status[2].find('div',
                                                     class_='line-status').
                                              contents)[-1].string
+
                     nb_timestamp = sibling_status[2].p.string
+
+                    writer.writerow([line_name, sb_status, sb_timestamp,
+                                     nb_status, nb_timestamp])
+
                     print "%s|%s|%s|%s|%s" % (line_name,
                                               sb_status, sb_timestamp,
                                               nb_status, nb_timestamp)
-
-
 
             # loop to inspect the html structure of line status
             # to be used when there is a change in the over structure
@@ -124,10 +137,7 @@ with open('test.csv', 'wb') as f:
                     count += 1
             """
 
-            #for i in zip(line_name, sb_status, nb_status):
-             #   writer.writerow([i[0].a.string, i[1], i[2]])
-
-            # TODO:needs scraper for service roads and accident notifications
+           # TODO:needs scraper for service roads and accident notifications
         except:
             UnicodeEncodeError
 
