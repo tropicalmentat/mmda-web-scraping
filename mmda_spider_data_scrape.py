@@ -12,7 +12,7 @@ def new_csv():
     t = time.localtime()
     suf = str(t[0]) + str(t[1]) + str(t[2]) + str(t[3]) \
             + str(t[4]) + str(t[5]) + str(t[6])
-    new_report = "test_trfc_stat_" + "_.csv"
+    new_report = "test_trfc_stat_" + suf + "_.csv"
     return new_report
 
 
@@ -128,8 +128,8 @@ def main():
 
                         nb_timestamp = convert_timestamp(sibling_status[2].p.string)
 
-                        #writer.writerow([line_name, sb_status, sb_timestamp,
-                         #                nb_status, nb_timestamp])
+                        writer.writerow([line_name, sb_status, sb_timestamp,
+                                         nb_status, nb_timestamp])
 
                         print "%s|%s|%s|%s|%s" % (line_name,
                                                   sb_status, sb_timestamp,
