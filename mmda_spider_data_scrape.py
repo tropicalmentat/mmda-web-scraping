@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from bs4 import BeautifulSoup
-import urllib
-import unicodecsv as csv
+import urllib.request, urllib.parse, urllib.error
+import csv
 import time
 
 
@@ -12,7 +12,7 @@ def new_csv():
     t = time.localtime()
     suf = str(t[0]) + str(t[1]) + str(t[2]) + str(t[3]) \
             + str(t[4]) + str(t[5]) + str(t[6])
-    new_report = "test_trfc_stat_" + suf + "_.csv"
+    new_report = "data/test_trfc_stat_" + suf + ".csv"
     return new_report
 
 
@@ -34,7 +34,7 @@ def main():
 
     site = 'http://mmdatraffic.interaksyon.com/line-view-edsa.php'
 
-    tr_start = urllib.urlopen(site).read()  #TODO: handle IO error
+    tr_start = urllib.request.urlopen(site).read()  #TODO: handle IO error
 
     # website to spider: http://mmdatraffic.interaksyon.com/line-view-edsa.php
     # code segment of interest is located from 264:271, div class "lnav"
@@ -59,7 +59,7 @@ def main():
 
     # crawl through links and write data to csv
 
-    with open(new_csv(), 'wb') as f:
+    with open(new_csv(), 'w') as f:
         writer = csv.writer(f, delimiter=',')
 
         # write field names
@@ -69,12 +69,12 @@ def main():
 
         for link in links:
             try:
-                tr_line = urllib.urlopen('http://mmdatraffic.interaksyon.com'
+                tr_line = urllib.request.urlopen('http://mmdatraffic.interaksyon.com'
                                          + '/' + link).read().decode('utf-8')
 
                 line_soup = BeautifulSoup(tr_line, "lxml")
 
-                print '\n\n'+site+'/'+link+'\n'
+                print('\n\n'+site+'/'+link+'\n')
 
                 # find first line data
                 traffic_status = line_soup.find("div", class_="line-row1").contents
@@ -103,9 +103,9 @@ def main():
                 writer.writerow([line_name, sb_status, sb_timestamp,
                                  nb_status, nb_timestamp])
 
-                print "%s|%s|%s|%s|%s" % (line_name,
+                print("%s|%s|%s|%s|%s" % (line_name,
                                     sb_status, sb_timestamp,
-                                    nb_status, nb_timestamp)
+                                    nb_status, nb_timestamp))
 
                 # find data for each sibling of the first
                 line_sib = line_soup.find("div", class_="line-row1").next_siblings
@@ -131,9 +131,9 @@ def main():
                         writer.writerow([line_name, sb_status, sb_timestamp,
                                          nb_status, nb_timestamp])
 
-                        print "%s|%s|%s|%s|%s" % (line_name,
+                        print("%s|%s|%s|%s|%s" % (line_name,
                                                   sb_status, sb_timestamp,
-                                                  nb_status, nb_timestamp)
+                                                  nb_status, nb_timestamp))
 
                 # loop to inspect the html structure of line status
                 # to be used when there is a change in the over structure
