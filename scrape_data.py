@@ -10,12 +10,14 @@ import logging
 import os
 from google.cloud import storage
 
-def new_csv():
+
+def current_timestamp():
+    return dt.datetime.now()
+
+
+def new_csv(timestamp):
     """Creates a new csv file with current date and time as suffix"""
-    t = time.localtime()
-    now = dt.datetime.now()
-    # suf = str(t[0]) + str(t[1]) + str(t[2]) + str(t[3]) + str(t[4]) + str(t[5]) + str(t[6])t
-    suf = now.strftime("%Y%m%d") + '_' + now.strftime("%H%M%S")
+    suf = timestamp.strftime("%Y%m%d") + '_' + timestamp.strftime("%H%M%S")
     new_report = "data/trfc_stat_" + suf + ".csv"
     return new_report
 
@@ -33,18 +35,25 @@ def convert_timestamp(s):
     t = split_time[1] + split_time[2]
     return t
 
-def upload_blob(bucket_name,dest_name,src_name):
+def upload_blob(timestamp,src_name):
     """Upload scrape dump to bucket"""
+    current_date = timestamp.strftime("%Y%m%d")
+    fn = src_name.split('/')[1]
+
     storage_client = storage.Client.from_service_account_json(os.environ['GCLOUD_STORAGE_CREDS'])
     bucket = storage_client.bucket(r'mmda-tv5-scrape-dumps')
-    blob = bucket.blob(r'20200725/test_trfc_stat_2020725748585.csv')
-    blob.upload_from_filename(r'data/test_trfc_stat_2020725748585.csv')
+    blob = bucket.blob(r'{}/{}'.format(current_date,fn))
+    blob.upload_from_filename(r'{}'.format(src_name))
     return
 
 
 def main():
 
     site = 'http://mmdatraffic.interaksyon.com/line-view-edsa.php'
+
+    now = current_timestamp()
+
+    dump_name = new_csv(now)
 
     tr_start = urllib.request.urlopen(site).read()  #TODO: handle IO error
 
@@ -73,7 +82,7 @@ def main():
 
     # crawl through links and write data to csv
 
-    with open(new_csv(), 'w') as f:
+    with open(dump_name,'w') as f:
         writer = csv.writer(f, delimiter=',')
 
         # write field names
@@ -163,10 +172,11 @@ def main():
                 """
 
                # TODO: Add logging
-               # TODO: Add logic to push data to cloud storage bucket
                # TODO: needs scraper for service roads and accident notifications
             except:
                 UnicodeEncodeError
+
+    upload_blob(now,dump_name)
 
 if __name__ == '__main__':
     main()
