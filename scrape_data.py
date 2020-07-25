@@ -5,17 +5,18 @@ from bs4 import BeautifulSoup
 import urllib.request, urllib.parse, urllib.error
 import csv
 import time 
+import datetime as dt
 import logging
 import os
 from google.cloud import storage
 
-
 def new_csv():
     """Creates a new csv file with current date and time as suffix"""
     t = time.localtime()
-    suf = str(t[0]) + str(t[1]) + str(t[2]) + str(t[3]) \
-            + str(t[4]) + str(t[5]) + str(t[6])
-    new_report = "data/test_trfc_stat_" + suf + ".csv"
+    now = dt.datetime.now()
+    # suf = str(t[0]) + str(t[1]) + str(t[2]) + str(t[3]) + str(t[4]) + str(t[5]) + str(t[6])t
+    suf = now.strftime("%Y%m%d") + '_' + now.strftime("%H%M%S")
+    new_report = "data/trfc_stat_" + suf + ".csv"
     return new_report
 
 
@@ -32,7 +33,7 @@ def convert_timestamp(s):
     t = split_time[1] + split_time[2]
     return t
 
-def upload_blob():
+def upload_blob(bucket_name,dest_name,src_name):
     """Upload scrape dump to bucket"""
     storage_client = storage.Client.from_service_account_json(os.environ['GCLOUD_STORAGE_CREDS'])
     bucket = storage_client.bucket(r'mmda-tv5-scrape-dumps')
@@ -68,7 +69,7 @@ def main():
             links.append(i.a["href"])
             #print i.a["href"]
 
-    upload_blob()
+    # upload_blob()
 
     # crawl through links and write data to csv
 
