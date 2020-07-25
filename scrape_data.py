@@ -4,7 +4,10 @@
 from bs4 import BeautifulSoup
 import urllib.request, urllib.parse, urllib.error
 import csv
-import time
+import time 
+import logging
+import os
+from google.cloud import storage
 
 
 def new_csv():
@@ -28,6 +31,14 @@ def convert_timestamp(s):
     split_time = s.split(' ')
     t = split_time[1] + split_time[2]
     return t
+
+def upload_blob():
+    """Upload scrape dump to bucket"""
+    storage_client = storage.Client.from_service_account_json(os.environ['GCLOUD_STORAGE_CREDS'])
+    bucket = storage_client.bucket(r'mmda-tv5-scrape-dumps')
+    blob = bucket.blob(r'20200725/test_trfc_stat_2020725748585.csv')
+    blob.upload_from_filename(r'data/test_trfc_stat_2020725748585.csv')
+    return
 
 
 def main():
@@ -57,6 +68,8 @@ def main():
             links.append(i.a["href"])
             #print i.a["href"]
 
+    upload_blob()
+
     # crawl through links and write data to csv
 
     with open(new_csv(), 'w') as f:
@@ -74,7 +87,7 @@ def main():
 
                 line_soup = BeautifulSoup(tr_line, "lxml")
 
-                print('\n\n'+site+'/'+link+'\n')
+                # print('\n\n'+site+'/'+link+'\n')
 
                 # find first line data
                 traffic_status = line_soup.find("div", class_="line-row1").contents
@@ -103,9 +116,9 @@ def main():
                 writer.writerow([line_name, sb_status, sb_timestamp,
                                  nb_status, nb_timestamp])
 
-                print("%s|%s|%s|%s|%s" % (line_name,
-                                    sb_status, sb_timestamp,
-                                    nb_status, nb_timestamp))
+                # print("%s|%s|%s|%s|%s" % (line_name,
+                                    # sb_status, sb_timestamp,
+                                    # nb_status, nb_timestamp))
 
                 # find data for each sibling of the first
                 line_sib = line_soup.find("div", class_="line-row1").next_siblings
@@ -131,9 +144,9 @@ def main():
                         writer.writerow([line_name, sb_status, sb_timestamp,
                                          nb_status, nb_timestamp])
 
-                        print("%s|%s|%s|%s|%s" % (line_name,
-                                                  sb_status, sb_timestamp,
-                                                  nb_status, nb_timestamp))
+                        # print("%s|%s|%s|%s|%s" % (line_name,
+                        #                           sb_status, sb_timestamp,
+                        #                           nb_status, nb_timestamp))
 
                 # loop to inspect the html structure of line status
                 # to be used when there is a change in the over structure
@@ -148,7 +161,9 @@ def main():
                         count += 1
                 """
 
-               # TODO:needs scraper for service roads and accident notifications
+               # TODO: Add logging
+               # TODO: Add logic to push data to cloud storage bucket
+               # TODO: needs scraper for service roads and accident notifications
             except:
                 UnicodeEncodeError
 
