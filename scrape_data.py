@@ -172,6 +172,7 @@ def main():
                 """
 
                # TODO: Add logging
+               # TODO: Optimize filenaming convention by removing redunant info
                # TODO: needs scraper for service roads and accident notifications
             except:
                 UnicodeEncodeError
