@@ -81,13 +81,10 @@ def main():
 
     tr_soup = BeautifulSoup(tr_start, "lxml")
 
-    #print tr_soup.prettify()
-
     tr_sites = tr_soup.find("div", class_="lnav")
 
     line_link = tr_sites.find_all("div", class_="row")
 
-    # collect line links
     links = []
 
     for i in line_link:
@@ -95,16 +92,13 @@ def main():
             pass
         else:
             links.append(i.a["href"])
-            #print i.a["href"]
-
-    # crawl through links and write data to csv
 
     with open(dump_name,'w') as f:
         writer = csv.writer(f, delimiter=',')
 
         # write field names
-        field_names = ['LINE', 'SB_STATUS', 'TIMESTAMP',
-                       'NB_STATUS', 'TIME_STAMP']
+        field_names = ['LINE', 'SB_STATUS', 'UPDATE_TIMESTAMP',
+                       'NB_STATUS', 'UPDATE_TIME_STAMP', 'SCRAPE_TIMESTAMP']
         writer.writerow(field_names)
 
         for link in links:
@@ -126,7 +120,6 @@ def main():
             # the third child is the northbound status
             # the timestamps of each status is embedded in the p tag
 
-            # remove child spaces
             remove_space(traffic_status)
 
             line_name = traffic_status[0].a.string
@@ -168,22 +161,11 @@ def main():
 
                     nb_timestamp = extract_update_timestamp(sibling_status[2].p.string)
 
+                    # Only get timestamp unti minute precision. Any more detail will bloat
+                    # raw data and we want to take advantage of GCS Always Free tier :)
                     writer.writerow([line_name, sb_status, sb_timestamp,
-                                     nb_status, nb_timestamp])
+                                     nb_status, nb_timestamp,dt.datetime.now().strftime("%Y-%m-%d %H:%M")])
 
-
-            # loop to inspect the html structure of line status
-            # to be used when there is a change in the over structure
-            # of the website
-            """
-            count = 1
-            for child in traffic_status.contents:
-                if child == '\n':  # ignore the space between tags
-                    pass
-                else:
-                    print "%d.%s" % (count, child)
-                    count += 1
-            """
            # TODO: implement log rotation for when logs get too big
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
