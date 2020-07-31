@@ -14,11 +14,17 @@ yesterday = (dt.datetime.now() - dt.timedelta(1)).strftime("%Y%m%d")
 
 blobs = list(bucket.list_blobs(prefix=yesterday))
 
-os.mkdir(os.path.join(data_fpath,yesterday))
+try:
+	os.mkdir(os.path.join(data_fpath,yesterday))
+except Exception as e:
+	print(e)
+
+dump = list()
 
 for blb in blobs:
 	blb_name = blb.name
 	fname = blb.name.split('/')[1]
 
-	with open(os.path.join(data_fpath,blb_name),"wb") as fobj:
-		blb.download_to_file(fobj)
+with open(data_fpath+'/'+yesterday+'.txt',"wb") as fobj:
+	for data in set(dump):
+		fobj.write(data)
