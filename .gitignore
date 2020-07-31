@@ -1,5 +1,6 @@
 traffic_scrape/
 data/
 config/
+logs/
 
 *.zip

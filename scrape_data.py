@@ -174,10 +174,6 @@ def main():
                     writer.writerow([line_name, sb_status, sb_timestamp,
                                      nb_status, nb_timestamp])
 
-                    # print("%s|%s|%s|%s|%s" % (line_name,
-                    #                           sb_status, sb_timestamp,
-                    #                           nb_status, nb_timestamp))
-
             # loop to inspect the html structure of line status
             # to be used when there is a change in the over structure
             # of the website
@@ -191,10 +187,8 @@ def main():
                     count += 1
             """
 
-           # TODO: Add logging
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
-
 
     upload_blob(now,dump_name)
 
