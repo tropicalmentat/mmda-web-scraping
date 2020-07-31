@@ -137,7 +137,7 @@ def main():
 
 
             writer.writerow([line_name, sb_status, sb_timestamp,
-                             nb_status, nb_timestamp])
+                             nb_status, nb_timestamp, dt.datetime.now().strftime("%Y-%m-%d %H:%M")])
 
 
             # find data for each sibling of the first
@@ -170,7 +170,7 @@ def main():
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
 
-    upload_blob(now,dump_name)
+    # upload_blob(now,dump_name)
 
 if __name__ == '__main__':
     main()
