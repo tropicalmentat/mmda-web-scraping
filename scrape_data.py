@@ -170,7 +170,7 @@ def main():
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
 
-    # upload_blob(now,dump_name)
+    upload_blob(now,dump_name)
 
 if __name__ == '__main__':
     main()
