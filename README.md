@@ -19,3 +19,4 @@ There's some related web-scraping work done by like-minded individuals in the pa
 - 2020-08-01 
 	1. Modified update timestamp by scraping information when status was last updated 
 	2. Added scrape timestamp to data dump for downstream processing of actual status update time
+	3. Applied modifications to cronjob with data scrape dump scheduled at 2020-08-01 7:15 am
