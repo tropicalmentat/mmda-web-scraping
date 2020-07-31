@@ -30,9 +30,9 @@ def remove_space(l):
     return l
 
 
-def convert_timestamp(s):
+def extract_update_timestamp(s):
     split_time = s.split(' ')
-    t = split_time[1] + split_time[2]
+    t = ' '.join(split_time[1:])
     return t
 
 def upload_blob(timestamp,src_name):
@@ -134,21 +134,18 @@ def main():
                                                             class_='line-status').
                                      contents)[-1].string
 
-            sb_timestamp = convert_timestamp(traffic_status[1].p.string)
+            sb_timestamp = extract_update_timestamp(traffic_status[1].p.string)
 
             nb_status = remove_space(traffic_status[2].find('div',
                                                             class_='line-status').
                                      contents)[-1].string
 
-            nb_timestamp = convert_timestamp(traffic_status[2].p.string)
+            nb_timestamp = extract_update_timestamp(traffic_status[2].p.string)
 
 
             writer.writerow([line_name, sb_status, sb_timestamp,
                              nb_status, nb_timestamp])
 
-            # print("%s|%s|%s|%s|%s" % (line_name,
-                                # sb_status, sb_timestamp,
-                                # nb_status, nb_timestamp))
 
             # find data for each sibling of the first
             line_sib = line_soup.find("div", class_="line-row1").next_siblings
@@ -163,16 +160,17 @@ def main():
                                                     class_='line-status').
                                              contents)[-1].string
 
-                    sb_timestamp = convert_timestamp(sibling_status[1].p.string)
+                    sb_timestamp = extract_update_timestamp(sibling_status[1].p.string)
 
                     nb_status = remove_space(sibling_status[2].find('div',
                                                     class_='line-status').
                                              contents)[-1].string
 
-                    nb_timestamp = convert_timestamp(sibling_status[2].p.string)
+                    nb_timestamp = extract_update_timestamp(sibling_status[2].p.string)
 
                     writer.writerow([line_name, sb_status, sb_timestamp,
                                      nb_status, nb_timestamp])
+
 
             # loop to inspect the html structure of line status
             # to be used when there is a change in the over structure
@@ -186,11 +184,11 @@ def main():
                     print "%d.%s" % (count, child)
                     count += 1
             """
-
+           # TODO: implement log rotation for when logs get too big
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
 
-    upload_blob(now,dump_name)
+    # upload_blob(now,dump_name)
 
 if __name__ == '__main__':
     main()
