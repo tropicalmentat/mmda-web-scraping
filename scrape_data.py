@@ -71,7 +71,7 @@ def main():
     dump_name = new_csv(now)
 
     try:
-        tr_start = urllib.request.urlopen(site).read()  #TODO: handle IO error
+        tr_start = urllib.request.urlopen(site).read()
         logger.info('Accessing {}'.format(site))
     except Exception as e:
         logger.error(e)
@@ -110,8 +110,6 @@ def main():
                 logger.error(e)
 
             line_soup = BeautifulSoup(tr_line, "lxml")
-
-            # print('\n\n'+site+'/'+link+'\n')
 
             # find first line data
             traffic_status = line_soup.find("div", class_="line-row1").contents
@@ -169,8 +167,11 @@ def main():
            # TODO: implement log rotation for when logs get too big
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
-
-    # upload_blob(now,dump_name)
+    try:
+        upload_blob(now,dump_name)
+        logger.info("Dumped data to bucket")
+    except Exception as e:
+        logger.error(e)
 
 if __name__ == '__main__':
     main()
