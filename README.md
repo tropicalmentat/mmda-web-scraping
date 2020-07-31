@@ -14,3 +14,8 @@ There's some related web-scraping work done by like-minded individuals in the pa
 - https://www.kaggle.com/esparko/mmda-traffic-incident-data
 - https://erikafille.wordpress.com/2015/09/01/web-scraping-with-urllib2-and-beautifulsoup/
 - https://business.inquirer.net/6043/mmda-launches-traffic-monitoring-website
+
+### Changelog
+- 2020-08-01 
+	1. Modified update timestamp by scraping information when status was last updated 
+	2. Added scrape timestamp to data dump for downstream processing of actual status update time
