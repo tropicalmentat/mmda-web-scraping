@@ -97,7 +97,7 @@ def main():
         writer = csv.writer(f, delimiter=',')
 
         # write field names
-        field_names = ['LINE', 'SB_STATUS', 'UPDATE_TIMESTAMP',
+        field_names = ['LINE_HEAD','LINE', 'SB_STATUS', 'UPDATE_TIMESTAMP',
                        'NB_STATUS', 'UPDATE_TIME_STAMP', 'SCRAPE_TIMESTAMP']
         writer.writerow(field_names)
 
@@ -110,6 +110,8 @@ def main():
                 logger.error(e)
 
             line_soup = BeautifulSoup(tr_line, "lxml")
+
+            line_head = line_soup.find("div",class_="line-head").contents[1].p.string
 
             # find first line data
             traffic_status = line_soup.find("div", class_="line-row1").contents
@@ -134,7 +136,7 @@ def main():
             nb_timestamp = extract_update_timestamp(traffic_status[2].p.string)
 
 
-            writer.writerow([line_name, sb_status, sb_timestamp,
+            writer.writerow([line_head,line_name, sb_status, sb_timestamp,
                              nb_status, nb_timestamp, dt.datetime.now().strftime("%Y-%m-%d %H:%M")])
 
 
@@ -161,14 +163,15 @@ def main():
 
                     # Only get timestamp unti minute precision. Any more detail will bloat
                     # raw data and we want to take advantage of GCS Always Free tier :)
-                    writer.writerow([line_name, sb_status, sb_timestamp,
+                    writer.writerow([line_head,line_name, sb_status, sb_timestamp,
                                      nb_status, nb_timestamp,dt.datetime.now().strftime("%Y-%m-%d %H:%M")])
 
+           # TODO: Add line head to data
            # TODO: implement log rotation for when logs get too big
            # TODO: Optimize filenaming convention by removing redunant info
            # TODO: needs scraper for service roads and accident notifications
     try:
-        upload_blob(now,dump_name)
+        # upload_blob(now,dump_name)
         logger.info("Dumped data to bucket")
     except Exception as e:
         logger.error(e)
