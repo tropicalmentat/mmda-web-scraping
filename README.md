@@ -22,3 +22,4 @@ There's some related web-scraping work done by like-minded individuals in the pa
 	3. Applied modifications to cronjob with data scrape dump scheduled at 2020-08-01 7:15 am
 - 2020-08-02
 	1. Added line head name (eg: EDSA, QUEZON AVE.) as part of scraped data
+	2. Applied modifications to scrape script for cron job job scheduled at 2020-08-02 6:30 am
